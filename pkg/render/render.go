@@ -4,9 +4,17 @@ import (
 	"bytes"
 	"html/template"
 	"log"
+	"myproject/pkg/config"
+	"myproject/pkg/models"
 	"net/http"
 	"path/filepath"
 )
+
+var app *config.AppConfig
+
+func SetAppConfig(a *config.AppConfig) {
+	app = a
+}
 
 // InitTemplateCache initializes the template cache on application startup
 func InitTemplateCache() (map[string]*template.Template, error) {
@@ -18,15 +26,19 @@ func InitTemplateCache() (map[string]*template.Template, error) {
 	return cache, nil
 }
 
+func AddDefaultData(td *models.TemplateData) *models.TemplateData {
+	return td
+}
+
 // Template renders a template from the given cache or reloads it if UseCache is false
-func Template(w http.ResponseWriter, tmplName string, cache map[string]*template.Template, useCache bool) {
+func Template(w http.ResponseWriter, tmplName string, td *models.TemplateData) {
 	var t *template.Template
 	var err error
 
-	if useCache {
+	if app.UseCache {
 		// Production mode: use cache
 		var ok bool
-		t, ok = cache[tmplName]
+		t, ok = app.TemplateCache[tmplName]
 		if !ok {
 			log.Printf("Could not get template '%s' from template cache", tmplName)
 			http.Error(w, "Template not found", http.StatusInternalServerError)
@@ -44,13 +56,14 @@ func Template(w http.ResponseWriter, tmplName string, cache map[string]*template
 	}
 
 	buf := new(bytes.Buffer)
-	err = t.Execute(buf, nil)
+
+	err = t.Execute(buf, AddDefaultData(td))
 	if err != nil {
 		log.Println("Error executing template:", err)
 		http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		return
 	}
-	// render the template
+
 	_, err = buf.WriteTo(w)
 	if err != nil {
 		log.Println("Error writing template to browser:", err)

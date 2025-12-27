@@ -1,13 +1,15 @@
-package handler
+package handlers
 
 import (
 	"log"
 	"myproject/pkg/config"
+	"myproject/pkg/models"
 	"myproject/pkg/render"
 	"net/http"
 )
 
-// Repository holds the application config
+var Repo *Repository
+
 type Repository struct {
 	App *config.AppConfig
 }
@@ -19,14 +21,20 @@ func NewRepository(a *config.AppConfig) *Repository {
 	}
 }
 
-// Home is the home page handler
+func NewHandlers(r *Repository) {
+	Repo = r
+}
 func (repo *Repository) Home(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Home handler called - Method: %s, URL: %s", r.Method, r.URL.Path)
-	render.Template(w, "home.page.tmpl", repo.App.TemplateCache, repo.App.UseCache)
+	render.Template(w, "home.page.tmpl", &models.TemplateData{})
 }
 
 // About is the about page handler
 func (repo *Repository) About(w http.ResponseWriter, r *http.Request) {
 	log.Printf("About handler called - Method: %s, URL: %s", r.Method, r.URL.Path)
-	render.Template(w, "about.page.tmpl", repo.App.TemplateCache, repo.App.UseCache)
+	stringMap := make(map[string]string)
+	stringMap["test"] = "Hello, again."
+	render.Template(w, "about.page.tmpl", &models.TemplateData{
+		StringMap: stringMap,
+	})
 }
