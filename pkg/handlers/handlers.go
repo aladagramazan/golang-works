@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"log"
 	"myproject/pkg/config"
 	"myproject/pkg/models"
 	"myproject/pkg/render"
@@ -25,15 +24,19 @@ func NewHandlers(r *Repository) {
 	Repo = r
 }
 func (repo *Repository) Home(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Home handler called - Method: %s, URL: %s", r.Method, r.URL.Path)
+	remoteIP := r.RemoteAddr
+	repo.App.Session.Put(r.Context(), "remote_ip", remoteIP)
 	render.Template(w, "home.page.tmpl", &models.TemplateData{})
 }
 
 // About is the about page handler
 func (repo *Repository) About(w http.ResponseWriter, r *http.Request) {
-	log.Printf("About handler called - Method: %s, URL: %s", r.Method, r.URL.Path)
 	stringMap := make(map[string]string)
 	stringMap["test"] = "Hello, again."
+
+	remoteIP := repo.App.Session.GetString(r.Context(), "remote_ip")
+	stringMap["remote_ip"] = remoteIP
+
 	render.Template(w, "about.page.tmpl", &models.TemplateData{
 		StringMap: stringMap,
 	})

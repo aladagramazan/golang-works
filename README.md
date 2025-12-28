@@ -4,4 +4,6 @@
 
  go get github.com/justinas/nosurf 
 
+go get github.com/alexedwards/scs/v2
+
 go mod tidy

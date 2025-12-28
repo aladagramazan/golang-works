@@ -17,7 +17,8 @@ func routes(app *config.AppConfig) http.Handler {
 	// panic detaylarını loglar
 	// sunucunun çalışmaya devam etmesini sağlar
 
-	mux.Use(NoSurf) // CSRF koruması ekler
+	mux.Use(NoSurf)      // CSRF koruması ekler
+	mux.Use(SessionLoad) // session yönetimi ekler
 
 	mux.Get("/", handlers.Repo.Home)
 	mux.Get("/about", handlers.Repo.About)
